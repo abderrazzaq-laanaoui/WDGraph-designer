@@ -399,13 +399,15 @@ const Canvas = ({ currentOperation }) => {
     // return the canvas
     return (
         <>
-            <button onClick={
-                () => {
-                    findShortestPathHandler();
-                }}>Find shortest path</button>
-            <button onClick={() => {
-                reset();
-            }}>Reset</button>
+            <div className="actions" >
+                <button onClick={
+                    () => {
+                        findShortestPathHandler();
+                    }}>Find shortest path</button>
+                <button onClick={() => {
+                    reset();
+                }}>Reset</button>
+            </div>
             <canvas ref={canvasRef} width={1000} height={600} onClick={handleClick} /*onDoubleClick={handleDoubleClick} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp}*/ />
         </>
     );
