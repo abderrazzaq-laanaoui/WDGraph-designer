@@ -1,4 +1,4 @@
-// add to the top
+// ajouter to the top
 import React from "react";
 import { createRoot } from "react-dom/client";
 import './app.css';
@@ -13,12 +13,10 @@ const App = () => {
 
         <div className="App">
             <div className="toolbar">
-                <button onClick={() => { setCurrentOperation("addNode"); }}>add node</button>
-                <button onClick={() => { setCurrentOperation("removeNode"); }}>remove node</button>
-                <button onClick={() => { setCurrentOperation("addVertix"); }}>add vertix</button>
-                <button onClick={() => { setCurrentOperation("removeVertix"); }} >remove vertix</button>
-                <button onClick={() => { setCurrentOperation("changeVertixWeight"); }}>change vertix weight</button>
-
+                <button onClick={() => { setCurrentOperation("addNode"); }}>ajouter Sommet</button>
+                <button onClick={() => { setCurrentOperation("removeNode"); }}>supprimer Sommet</button>
+                <button onClick={() => { setCurrentOperation("addArc"); }}>Ajouter Arc</button>
+                <button onClick={() => { setCurrentOperation("removeArc"); }} >supprimer Arc</button>
             </div>
             <Canvas currentOperation={currentOperation} />
         </div>
@@ -26,5 +24,9 @@ const App = () => {
 
 };
 
-
-createRoot(document.getElementById("root")).render(<App />);
+let container = null;
+if (!container) {
+    container = document.getElementById('root');
+    const root = createRoot(container);
+    root.render(<App />)
+}

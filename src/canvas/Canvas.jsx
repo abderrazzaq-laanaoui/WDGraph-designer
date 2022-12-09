@@ -1,16 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import StringIdGenerator from "../StringIdGenerator";
+import bellman from "../bellman";
 import './canvas.css';
 const Canvas = ({ currentOperation }) => {
     const ids = StringIdGenerator.getInstace();
     const canvasRef = useRef(null);
-    // track the nodes, and the vertixes
+    // track the nodes, and the arces
     const [sommets, setSommets] = useState([]);
     const [arcs, setArcs] = useState([]);
     let node1 = null;
     let node2 = null;
 
-    // redraw the canvas every time the nodes or vertixes change
+    // redraw the canvas every time the nodes or arces change
     useEffect(() => {
         console.table(sommets);
         console.table(arcs);
@@ -25,7 +26,8 @@ const Canvas = ({ currentOperation }) => {
         const node = {
             name: name,
             X: X,
-            Y: Y
+            Y: Y,
+            isInShortestPath: false,
         };
         // add it to the nodes array
 
@@ -46,39 +48,46 @@ const Canvas = ({ currentOperation }) => {
         context.fillStyle = "white";
         context.fill();
         context.lineWidth = 2;
-        context.strokeStyle = "black";
+        if (node.isInShortestPath)
+            context.strokeStyle = "red";
+        else
+            context.strokeStyle = "black";
         context.stroke();
 
 
         // draw the node name in black
         context.font = "25px Arial";
-        context.fillStyle = "black";
+        if (node.isInShortestPath)
+            context.fillStyle = "red";
+        else
+            context.fillStyle = "black";
         context.textAlign = "center";
         context.textBaseline = "middle";
         context.fillText(node.name, node.X, node.Y);
     };
 
-    // add a vertix to the canvas
-    const addVertix = (node1, node2, weight) => {
+    // add a arc to the canvas
+    const addArc = (node1, node2, weight) => {
 
-        // if the vertix already exists, don't add it
-        if (node1 === node2 || vertixExists(node1, node2))
+        // if the arc already exists, don't add it
+        if (node1 === node2 || arcExists(node1, node2))
             return;
 
 
-        // create a new vertix
-        const vertix = {
+        // create a new arc
+        const arc = {
             node1: node1,
             node2: node2,
-            weight: weight
+            weight: weight,
+            isInShortestPath: false,
         };
-        // add it to the vertixes array
-        setArcs([...arcs, vertix]);
+        // add it to the arces array
+        setArcs([...arcs, arc]);
         // draw it on the canvas
-        drawVertix(vertix);
+        drawArc(arc);
     };
-    const vertixExists = (node1, node2) => {
-        // check if the vertix already exists
+    const arcExists = (node1, node2) => {
+        // check if the arc already exists
         for (let i = 0; i < arcs.length; i++) {
             if ((arcs[i].node1 === node1 && arcs[i].node2 === node2) ||
                 (arcs[i].node1 === node2 && arcs[i].node2 === node1)) {
@@ -88,22 +97,22 @@ const Canvas = ({ currentOperation }) => {
         return false;
     };
 
-    // draw a vertix on the canvas
-    const drawVertix = (vertix) => {
+    // draw a arc on the canvas
+    const drawArc = (arc) => {
         // get the canvas context
         const context = canvasRef.current.getContext("2d");
 
-        // draw the vertix as a black line between the closest points of the two nodes with a weight in the middle, the stroke width is 3 the end of the line is shaped as a triangle
+        // draw the arc as a black line between the closest points of the two nodes with a weight in the middle, the stroke width is 3 the end of the line is shaped as a triangle
         // get the coordinates of the closest points of the two nodes
-        const point1 = getClosestPoint(vertix.node1, vertix.node2);
-        const point2 = getClosestPoint(vertix.node2, vertix.node1);
+        const point1 = getClosestPoint(arc.node1, arc.node2);
+        const point2 = getClosestPoint(arc.node2, arc.node1);
 
         context.beginPath();
         context.moveTo(point1.X, point1.Y);
         context.lineTo(point2.X, point2.Y);
         context.lineWidth = 3;
 
-        if (vertix.isInShortestPath) {
+        if (arc.isInShortestPath) {
             context.strokeStyle = "red";
             context.stroke();
             context.fillStyle = "red";
@@ -115,11 +124,7 @@ const Canvas = ({ currentOperation }) => {
             context.fillStyle = "black";
             context.fill();
         }
-        // draw the weight in the middle of the line but a little bit higher 
-        context.font = "20px Arial";
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillText(vertix.weight, (point1.X + point2.X) / 2, (point1.Y + point2.Y) / 2 - 10);
+
 
 
         // draw the triangle at the end of the line with the same orientation as the line
@@ -131,6 +136,13 @@ const Canvas = ({ currentOperation }) => {
         context.closePath();
         context.fill();
 
+        // draw the weight in the middle of the line but a little bit higher 
+        context.font = "20px Arial";
+        // green color
+        context.fillStyle = "green";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(arc.weight, (point1.X + point2.X) / 2, (point1.Y + point2.Y) / 2 - 10);
     };
     const getClosestPoint = (node1, node2) => {
         // get the coordinates of the closest points of the two nodes
@@ -203,18 +215,18 @@ const Canvas = ({ currentOperation }) => {
     const removeNode = (node) => {
         // remove the node from the nodes array
         setSommets(sommets.filter(n => n !== node));
-        // remove the node from the vertixes array
-        arcs.forEach(vertix => {
-            if (vertix.node1 === node || vertix.node2 === node) {
-                removeVertix(vertix);
+        // remove the node from the arces array
+        arcs.forEach(arc => {
+            if (arc.node1 === node || arc.node2 === node) {
+                removeArc(arc);
             }
         });
     };
 
-    // remove a vertix from the canvas
-    const removeVertix = (vertix) => {
-        // remove the vertix from the vertixes array
-        setArcs(arcs.filter(v => v !== vertix));
+    // remove a arc from the canvas
+    const removeArc = (arc) => {
+        // remove the arc from the arces array
+        setArcs(arcs.filter(v => v !== arc));
 
     };
 
@@ -231,14 +243,15 @@ const Canvas = ({ currentOperation }) => {
             drawNode(node);
         });
 
-        // redraw the vertixes
-        arcs.forEach(vertix => {
-            drawVertix(vertix);
+        // redraw the arces
+        arcs.forEach(arc => {
+            drawArc(arc);
         });
     };
 
     // add a node to the canvas when the user clicks on it
     const handleClick = (event) => {
+        console.log("click with operation " + currentOperation);
         if (currentOperation === "addNode") {
             // get the canvas position
             const rect = canvasRef.current.getBoundingClientRect();
@@ -270,8 +283,8 @@ const Canvas = ({ currentOperation }) => {
                     removeNode(node);
                 }
             });
-        } else if (currentOperation === "addVertix") {
-
+        } else if (currentOperation === "addArc") {
+            console.log("add arc");
             // get the canvas position
             const rect = canvasRef.current.getBoundingClientRect();
 
@@ -289,16 +302,16 @@ const Canvas = ({ currentOperation }) => {
                 if (node2 === undefined)
                     return;
                 if (node1 !== null && node2 !== null && node1 !== node2) {
-                    let weight = prompt("Enter the weight of the vertix");
+                    let weight = prompt("Enter the weight of the arc");
 
-                    addVertix(node1, node2, weight);
-                    console.log("vertix added");
+                    addArc(node1, node2, weight);
+                    console.log("arc added");
                     node1 = null;
                     node2 = null;
                 }
             }
 
-        } else if (currentOperation === "removeVertix") {
+        } else if (currentOperation === "removeArc") {
             // get the canvas position
             const rect = canvasRef.current.getBoundingClientRect();
 
@@ -306,12 +319,12 @@ const Canvas = ({ currentOperation }) => {
             const X = event.clientX - rect.left;
             const Y = event.clientY - rect.top;
 
-            // check if the user clicked on a vertix
-            arcs.forEach(vertix => {
-                // check if the user clicked on the vertix line
-                if (Math.abs((vertix.node2.Y - vertix.node1.Y) * X - (vertix.node2.X - vertix.node1.X) * Y + vertix.node2.X * vertix.node1.Y - vertix.node2.Y * vertix.node1.X) / Math.sqrt(Math.pow(vertix.node2.Y - vertix.node1.Y, 2) + Math.pow(vertix.node2.X - vertix.node1.X, 2)) <= 5) {
-                    // remove the vertix from the canvas
-                    removeVertix(vertix);
+            // check if the user clicked on a arc
+            arcs.forEach(arc => {
+                // check if the user clicked on the arc line
+                if (Math.abs((arc.node2.Y - arc.node1.Y) * X - (arc.node2.X - arc.node1.X) * Y + arc.node2.X * arc.node1.Y - arc.node2.Y * arc.node1.X) / Math.sqrt(Math.pow(arc.node2.Y - arc.node1.Y, 2) + Math.pow(arc.node2.X - arc.node1.X, 2)) <= 5) {
+                    // remove the arc from the canvas
+                    removeArc(arc);
                 }
 
 
@@ -320,61 +333,35 @@ const Canvas = ({ currentOperation }) => {
     };
 
     const findShortestPath = (Node1, Node2) => {
-        // application de l'algorithme de bellman ford
-        // trouver le chamin le plus court entre deux noeuds
-        // marquer les arcs qui sont dans le chemin le plus court avec un attribut "isInShortestPath" à true
-        // marquer les noeuds qui sont dans le chemin le plus court avec un attribut "isInShortestPath" à true
-        // utilser la fonction setArcs et setSommets pour mettre à jour les noeuds et les arcs
+        let path = bellman(sommets, arcs, Node1, Node2);
 
-        // réinitialiser les attributs isInShortestPath des noeuds et des arcs
-        arcs.forEach(vertix => {
-            vertix.isInShortestPath = false;
+        if (path.length === 0) {
+            alert("there is no path between the source and the destination nodes");
+            return;
+        }
+
+        // set isInShortestPath attribute to true for the arcs in the shortest path, and false for the others
+        // a node is in the shortest path if it is in the path array
+        // we can find two nodes in the shortest path but not the arc between them, so we need to set the isInShortestPath attribute to true only if the two nodes are consecutive in the path array
+        arcs.forEach(arc => {
+            arc.isInShortestPath = false;
+            for (let i = 0; i < path.length - 1; i++) {
+                if ((arc.node1 === path[i] && arc.node2 === path[i + 1]) || (arc.node1 === path[i + 1] && arc.node2 === path[i])) {
+                    arc.isInShortestPath = true;
+                    break;
+                }
+            }
         });
+
         sommets.forEach(node => {
             node.isInShortestPath = false;
-        });
-        // réinitialiser les attributs distance et previous du noeud source
-        Node1.distance = 0;
-        Node1.previous = null;
-        // réinitialiser les attributs distance et previous des autres noeuds
-        sommets.forEach(node => {
-            if (node !== Node1) {
-                node.distance = Infinity;
-                node.previous = null;
+            if (path.includes(node)) {
+                node.isInShortestPath = true;
             }
         });
-        // répéter V-1 fois
-        for (let i = 1; i < sommets.length; i++) {
-            // pour chaque arc
-            arcs.forEach(vertix => {
-                // si le poids de l'arc + la distance du noeud source est inférieur à la distance du noeud destination
-                if (vertix.node1.distance + vertix.weight < vertix.node2.distance) {
-                    // mettre à jour la distance du noeud destination
-                    vertix.node2.distance = vertix.node1.distance + vertix.weight;
-                    // mettre à jour le previous du noeud destination
-                    vertix.node2.previous = vertix.node1;
-                }
-            });
-        }
-        // pour chaque arc
-        arcs.forEach(vertix => {
-            // si le poids de l'arc + la distance du noeud source est inférieur à la distance du noeud destination
-            if (vertix.node1.distance + vertix.weight < vertix.node2.distance) {
-                // afficher un message d'erreur
-                alert("Le graphe contient un cycle de poids négatif");
-            }
-        });
-        // marquer les noeuds qui sont dans le chemin le plus court avec un attribut "isInShortestPath" à true
-        let node = Node2;
-        while (node !== null) {
-            node.isInShortestPath = true;
-            node = node.previous;
-        }
-        // marquer les arcs qui sont dans le chemin le plus court avec un attribut "isInShortestPath" à true
-        arcs.forEach(vertix => {
-            if (vertix.node2.isInShortestPath && vertix.node1.isInShortestPath)
-                vertix.isInShortestPath = true;
-        });
+
+
+
         // utilser la fonction setArcs et setSommets pour mettre à jour les noeuds et les arcs
         setArcs([...arcs]);
         setSommets([...sommets]);
@@ -384,16 +371,19 @@ const Canvas = ({ currentOperation }) => {
 
 
     const findShortestPathHandler = () => {
-        let node1 = prompt("Enter the name of the source node");
-        let node2 = prompt("Enter the name of the destination node");
+        let node1_name = prompt("Enter the name of the source node");
+        let node2_name = prompt("Enter the name of the destination node");
+        let node1 = sommets.find(node => node.name === node1_name);
+        let node2 = sommets.find(node => node.name === node2_name);
         // check if the source and the destination nodes exist
-        if (sommets.find(node => node.name === node1) === undefined || sommets.find(node => node.name === node2) === undefined) {
+        if (node1 === undefined || node2 === undefined) {
             console.log("the source or the destination node does not exist");
+            console.log(node1_name, node2_name);
             return;
         }
 
         // find the shortest path between the source and the destination
-        findShortestPath(sommets.find(node => node.name === node1), sommets.find(node => node.name === node2));
+        findShortestPath(node1, node2);
         console.log("shortest path found");
         console.log(arcs);
 
