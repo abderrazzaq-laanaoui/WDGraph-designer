@@ -11,11 +11,11 @@ const bellman = (nodes, edges, source,distination )=>{
         }
     }
 
-    console.log(G);
     for (let i = 0; i < edges.length; i++) {
         let edge = edges[i];
         G[edge.node1.name][edge.node2.name] = +edge.weight;
     }
+    console.table(G);
 
     let dist = [];
     let prev = [];
@@ -30,7 +30,8 @@ const bellman = (nodes, edges, source,distination )=>{
             let dist1 = dist[edges[j].node1.name];
            for(let k = 0; k < edges.length; k++){
                let dist2 = dist[edges[k].node2.name];
-               if(G[edges[j].node1.name][edges[k].node2.name] != 0 && dist1 + G[edges[j].node1.name][edges[j].node2.name] < dist2){
+               if(G[edges[j].node1.name][edges[k].node2.name] != 0 && 
+                dist1 + G[edges[j].node1.name][edges[j].node2.name] < dist2){
                    dist[edges[k].node2.name] = dist1 + G[edges[j].node1.name][edges[k].node2.name];
                    prev[edges[k].node2.name] = edges[j].node1.name;
                }
@@ -39,13 +40,13 @@ const bellman = (nodes, edges, source,distination )=>{
         }
     }
 
+   // detecting negative circle
     for(let i = 0; i < edges.length; i++){
         let dist1 = dist[edges[i].node1.name];
-        for(let j = 0; j < edges.length; j++){
-            let dist2 = dist[edges[j].node2.name];
-            if(G[edges[i].node1.name][edges[j].node2.name] != 0 && dist1 + G[edges[i].node1.name][edges[j].node2.name] < dist2){
-                return null;
-            }
+        let dist2 = dist[edges[i].node2.name];
+        if(G[edges[i].node1.name][edges[i].node2.name] != 0 && dist1 + G[edges[i].node1.name][edges[i].node2.name] < dist2){
+            console.log("Negative Circle found");
+            return null;
         }
     }
 
