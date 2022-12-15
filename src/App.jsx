@@ -11,8 +11,7 @@ const App = () => {
 
     const handleClick = (e, operation) => {        // add class name of active to the button
         setCurrentOperation(operation);
-        // log the operation
-        console.log('current op => ', operation);
+       
         const buttons = document.querySelectorAll("button");
         buttons.forEach((button) => {
             button.classList.remove("active");

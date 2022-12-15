@@ -3,8 +3,6 @@ const bellman = (nodes, edges, source,distination )=>{
     // nodes as an array of {name, X, Y}
     // edges as an array of {node1, node2, weight}, where node1 and node2 are node objects
 
-   
-
     let G = new Array(nodes.length);
     for (let i = 0; i < nodes.length; i++) {
         G[nodes[i].name] = new Array(nodes.length);
@@ -12,12 +10,12 @@ const bellman = (nodes, edges, source,distination )=>{
             G[nodes[i].name][nodes[j].name] = 0;
         }
     }
-    
+
+    console.log(G);
     for (let i = 0; i < edges.length; i++) {
         let edge = edges[i];
         G[edge.node1.name][edge.node2.name] = +edge.weight;
     }
-    console.table(G);
 
     let dist = [];
     let prev = [];
@@ -46,27 +44,23 @@ const bellman = (nodes, edges, source,distination )=>{
         for(let j = 0; j < edges.length; j++){
             let dist2 = dist[edges[j].node2.name];
             if(G[edges[i].node1.name][edges[j].node2.name] != 0 && dist1 + G[edges[i].node1.name][edges[j].node2.name] < dist2){
-               alert("Graph contains negative weight cycle");
                 return null;
             }
         }
     }
 
-    console.log("prev",prev);
-    console.log("dist",dist);
     let path = [];
     let distination_name = distination.name;
-    console.log("before distination",distination);
     while(distination_name != null){
-        console.log("distination",distination_name);
         path.push(nodes.find(node => node.name === distination_name));
         distination_name = prev[distination_name];
     }
+    // if only one node is selected, path will be empty
+    if(path.length <=1){
+        return new Array();
+    }
 
     path.reverse();
-    console.log("path",path); 
-
-
     return path;
 }
 export default bellman;
